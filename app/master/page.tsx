@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { get_data } from "../apiCall";
+import { delete_request, get_data } from "../apiCall";
+import { toast } from "sonner";
 
 interface UOM {
   uom_id: number;
@@ -16,6 +17,7 @@ export default function MasterPage() {
   const [dataList, setDataList] = useState<UOM[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -26,6 +28,28 @@ export default function MasterPage() {
  const nav_update = (uom_id: number) => {
   router.push(`/update/${uom_id}`);
 };
+
+  const deleteUom = async (uom_id: number, uom_name: string) => {
+    if (!window.confirm(`Delete “${uom_name}” (ID: ${uom_id})? This cannot be undone.`)) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Access token not found. Please log in.");
+      router.push("/");
+      return;
+    }
+
+    setDeletingId(uom_id);
+    const deleted = await delete_request(uom_id, token);
+    setDeletingId(null);
+
+    if (deleted) {
+      setDataList((current) => current.filter((item) => item.uom_id !== uom_id));
+      toast.success("UOM deleted successfully");
+    } else {
+      toast.error("Could not delete UOM. Please try again.");
+    }
+  };
 
     const logout = () => {
         localStorage.removeItem("token")
@@ -89,7 +113,7 @@ export default function MasterPage() {
         {!loading && error && <div className="m-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700" role="alert">{error}</div>}
         {!loading && !error && (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] divide-y divide-slate-200 text-left text-sm">
+            <table className="w-full min-w-[800px] divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-5 py-4 font-semibold">UOM ID</th>
@@ -98,6 +122,7 @@ export default function MasterPage() {
                   <th className="px-5 py-4 font-semibold">Description</th>
                   <th className="px-5 py-4 font-semibold">Status</th>
                   <th className="px-5 py-4 font-semibold">Actions</th>
+                  <th className="px-5 py-4 font-semibold">Delete</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -109,9 +134,10 @@ export default function MasterPage() {
                     <td className="max-w-sm truncate px-5 py-4 text-slate-500">{item.description ?? "-"}</td>
                     <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{item.active ? "Active" : "Inactive"}</span></td>
                     <td className="px-5 py-4"><button className="font-semibold text-indigo-600 hover:text-indigo-800" type="button" onClick={() => nav_update(item.uom_id)}>Edit</button></td>
+                    <td className="px-5 py-4"><button className="font-semibold text-rose-600 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled={deletingId === item.uom_id} onClick={() => void deleteUom(item.uom_id, item.uom_name)}>{deletingId === item.uom_id ? "Deleting..." : "Delete"}</button></td>
                   </tr>
                 )) : (
-                  <tr><td className="px-5 py-12 text-center text-slate-500" colSpan={6}>No UOM records found.</td></tr>
+                  <tr><td className="px-5 py-12 text-center text-slate-500" colSpan={7}>No UOM records found.</td></tr>
                 )}
               </tbody>
             </table>

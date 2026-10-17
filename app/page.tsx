@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { login_request } from "./apiCall";
 import { useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 export default function Home() {
   const [username, setUsername] = useState("");
@@ -26,7 +26,6 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-white to-indigo-100 px-4 py-12">
-      <Toaster />
       <form
         className="w-full max-w-md space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60"
         onSubmit={(event) => {

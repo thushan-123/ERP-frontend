@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { create_request } from "../apiCall";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CreateUOM () {
 
@@ -18,14 +19,14 @@ export default function CreateUOM () {
         if (token){
             const res = await create_request(uomCode,uomState,uomCategory,decimalPlaces,description,token)
             if (res){
-                alert("Create Successfull")
+                toast.success("UOM created successfully")
                 router.push("/master")
             }else {
-                alert("Create Fail")
+                toast.error("Could not create UOM")
             }
         }else{
             console.log("token fetch fail")
-            alert("token fetch fail")
+            toast.error("Access token not found. Please log in.")
             return
         }
         

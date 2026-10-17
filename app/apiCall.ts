@@ -132,4 +132,23 @@ const update_request = async (uom_id: number ,uom_code:string,uom_name :string,u
     }
 }
 
-export {login_request, get_data , create_request, update_request}
+const delete_request = async (uom_id: number, token: string) => {
+    const config: AxiosRequestConfig = {
+        method: "delete",
+        url: `${URL}/uom/${uom_id}`,
+        headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+        },
+    }
+
+    try {
+        const res = await axios(config)
+        return res.status === 200
+    } catch (error) {
+        console.error(error)
+        return false
+    }
+}
+
+export {login_request, get_data , create_request, update_request, delete_request}

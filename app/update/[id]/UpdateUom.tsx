@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { get_data, update_request } from "../../apiCall";
 
 interface UOM {
@@ -85,14 +86,14 @@ export default function UpdateUom({ id }: UpdateUomProps) {
     const uomId = Number(id);
 
     if (!Number.isInteger(uomId) || uomId <= 0) {
-      alert("Invalid UOM ID");
+      toast.error("Invalid UOM ID")
       return;
     }
 
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Access token not found");
+      toast.error("Access token not found. Please log in.")
       return;
     }
 
@@ -109,14 +110,14 @@ export default function UpdateUom({ id }: UpdateUomProps) {
       );
 
       if (res) {
-        alert("Update successful");
+        toast.success("UOM updated successfully")
         router.push("/master");
       } else {
-        alert("Update failed");
+        toast.error("Could not update UOM")
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong while updating");
+      toast.error("Something went wrong while updating")
     }
   };
 
