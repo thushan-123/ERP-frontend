@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { login_request } from "./apiCall";
 import { useRouter } from "next/navigation";
+import { toast, Toaster } from "sonner";
 
 export default function Home() {
   const [username, setUsername] = useState("");
@@ -16,15 +17,16 @@ export default function Home() {
 
     if (res){
       localStorage.setItem("token", res.access_token)
-      alert("login success")
+      toast.success("Login successful")
       router.push("/master")
     }else {
-      alert("incorrect credentials");
+      toast.error("Incorrect credentials")
     }
   }
 
   return (
     <div>
+      <Toaster />
       <h1>ERP Login</h1>
 
       <label>Username :</label>
