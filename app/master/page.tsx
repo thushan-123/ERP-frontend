@@ -18,6 +18,7 @@ export default function MasterPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<UOM | null>(null);
 
   const router = useRouter();
 
@@ -29,9 +30,7 @@ export default function MasterPage() {
   router.push(`/update/${uom_id}`);
 };
 
-  const deleteUom = async (uom_id: number, uom_name: string) => {
-    if (!window.confirm(`Delete “${uom_name}” (ID: ${uom_id})? This cannot be undone.`)) return;
-
+  const deleteUom = async (uom_id: number) => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Access token not found. Please log in.");
@@ -45,6 +44,7 @@ export default function MasterPage() {
 
     if (deleted) {
       setDataList((current) => current.filter((item) => item.uom_id !== uom_id));
+      setPendingDelete(null);
       toast.success("UOM deleted successfully");
     } else {
       toast.error("Could not delete UOM. Please try again.");
@@ -134,7 +134,7 @@ export default function MasterPage() {
                     <td className="max-w-sm truncate px-5 py-4 text-slate-500">{item.description ?? "-"}</td>
                     <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{item.active ? "Active" : "Inactive"}</span></td>
                     <td className="px-5 py-4"><button className="font-semibold text-indigo-600 hover:text-indigo-800" type="button" onClick={() => nav_update(item.uom_id)}>Edit</button></td>
-                    <td className="px-5 py-4"><button className="font-semibold text-rose-600 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled={deletingId === item.uom_id} onClick={() => void deleteUom(item.uom_id, item.uom_name)}>{deletingId === item.uom_id ? "Deleting..." : "Delete"}</button></td>
+                    <td className="px-5 py-4"><button className="font-semibold text-rose-600 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled={deletingId === item.uom_id} onClick={() => setPendingDelete(item)}>{deletingId === item.uom_id ? "Deleting..." : "Delete"}</button></td>
                   </tr>
                 )) : (
                   <tr><td className="px-5 py-12 text-center text-slate-500" colSpan={7}>No UOM records found.</td></tr>
@@ -144,6 +144,39 @@ export default function MasterPage() {
           </div>
         )}
       </section>
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" role="presentation">
+          <section
+            aria-labelledby="delete-dialog-title"
+            aria-modal="true"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            role="dialog"
+          >
+            <h2 className="text-lg font-semibold text-slate-900" id="delete-dialog-title">Delete this UOM?</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Delete “{pendingDelete.uom_name}” (ID: {pendingDelete.uom_id})? This cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                disabled={deletingId !== null}
+                onClick={() => setPendingDelete(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-lg bg-rose-600 px-4 py-2 font-semibold text-white transition hover:bg-rose-700 disabled:cursor-wait disabled:opacity-60"
+                disabled={deletingId !== null}
+                onClick={() => void deleteUom(pendingDelete.uom_id)}
+                type="button"
+              >
+                {deletingId === pendingDelete.uom_id ? "Deleting..." : "Delete UOM"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
