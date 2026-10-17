@@ -97,14 +97,14 @@ const create_request = async (uom_code:string,uom_name :string,uom_category: str
 }
 
 
-const update_request = async (uom_id: number ,uom_code:string,uom_name :string,uom_category: string,decimal_places:string,description:string,token:string) => {
+const update_request = async (uom_id: number ,uom_code:string,uom_name :string,uom_category: string,decimal_places:string,description:string,token:string,active = true) => {
     const data = JSON.stringify({
         "uom_code" : uom_code,
         "uom_name" : uom_name,
         "uom_category" : uom_category,
         "decimal_places" : decimal_places,
         "description" : description,
-        "active" : true
+        "active" : active
     })
 
     const config: AxiosRequestConfig = {
